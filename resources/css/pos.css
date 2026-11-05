@@ -1,24 +1,32 @@
 @import 'tailwindcss';
 
 @source '../views/livewire/**/*.blade.php';
-@source '../views/components/layouts/pos.blade.php';
+@source '../views/components/**/*.blade.php';
 @source '../../app/Livewire/**/*.php';
 
-/* Cashier screen: system fonts only (works offline, nothing to download). */
+/*
+ * Cashier screen. System fonts only (works offline, nothing to download): Segoe UI Variable on the
+ * cafe's Windows till, the platform's own face elsewhere. The palette is the cafe's: a stone ground,
+ * espresso ink, a roasted-copper brand colour and a mint-tea green for the one big "confirm" action.
+ */
 @theme {
     --font-sans: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial,
         sans-serif, 'Segoe UI Emoji', 'Apple Color Emoji';
+    --font-display: 'Segoe UI Variable Display', 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue',
+        Arial, sans-serif;
 
-    --color-wash: #eef2f7;
-    --color-line: #d3dbe6;
-    --color-ink: #0f1b2d;
-    --color-muted: #4a5a70;
-    --color-sidi: #1b4f9c;
-    --color-go: #157a3a;
-    --color-go-dark: #0f622e;
-    --color-go-soft: #dcf3e3;
-    --color-stop: #b42318;
-    --color-stop-soft: #fde4e1;
+    --color-wash: #f3f1ed;
+    --color-raised: #f8f6f3;
+    --color-line: #e5dfd6;
+    --color-line-strong: #d4ccc0;
+    --color-ink: #221a15;
+    --color-muted: #66594e;
+    --color-brand: #8f4a1d;
+    --color-go: #1d6a45;
+    --color-go-dark: #14523a;
+    --color-go-soft: #e1f0e7;
+    --color-stop: #b3261e;
+    --color-stop-soft: #fbe5e2;
 }
 
 html {
@@ -31,43 +39,75 @@ body {
     user-select: none;
 }
 
-/* Immediate tactile feedback on every tap target. */
+/* Immediate tactile feedback on every tap target: a quick press-in, then back. */
 .pos-press {
     cursor: pointer;
     transition:
-        transform 80ms ease-out,
+        transform 90ms ease-out,
         background-color 120ms ease-out,
-        border-color 120ms ease-out;
+        box-shadow 120ms ease-out,
+        color 120ms ease-out;
 }
 
 .pos-press:active:not(:disabled) {
-    transform: scale(0.97);
+    transform: scale(0.96);
+    transition-duration: 40ms;
 }
 
 .pos-press:focus-visible {
-    outline: 3px solid var(--color-sidi);
+    outline: 3px solid var(--color-brand);
     outline-offset: 2px;
 }
 
-/* Confirmation banner fades out on its own after a few seconds. */
+/* A product tile darkens towards its category colour while it is pressed. */
+.pos-tile:active {
+    background-color: color-mix(in oklab, var(--accent) 12%, white);
+}
+
+/* Confirmation banner: drops in, holds, then fades out on its own. */
 .pos-notice {
-    animation: pos-notice 5s ease-in forwards;
+    animation: pos-notice 5s ease-out forwards;
 }
 
 @keyframes pos-notice {
-    0%,
+    0% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    4%,
     80% {
         opacity: 1;
+        transform: none;
     }
     100% {
         opacity: 0;
     }
 }
 
+/* Slim, quiet scrollbars inside the two scrolling panes. */
+.pos-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .pos-press,
-    .pos-notice {
+    .pos-press:active:not(:disabled) {
         transition: none;
-        animation: none;
+        transform: none;
+    }
+
+    .pos-notice {
+        animation: pos-notice-fade 5s linear forwards;
+    }
+
+    @keyframes pos-notice-fade {
+        0%,
+        80% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 0;
+        }
     }
 }

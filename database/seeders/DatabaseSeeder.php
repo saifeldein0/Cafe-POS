@@ -11,15 +11,20 @@ class DatabaseSeeder extends Seeder
     use WithoutModelEvents;
 
     /**
-     * Seed the application's database.
+     * Seed the application's database. Safe to run repeatedly.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        User::firstOrCreate(
+            ['email' => 'owner@cafepos.local'],
+            ['name' => 'Owner', 'password' => env('OWNER_PASSWORD', 'cafepos')], // hashed by the model cast
+        );
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            MenuSeeder::class,
+            IngredientSeeder::class,
+            RecipeSeeder::class,
+            ExpenseSeeder::class,
         ]);
     }
 }

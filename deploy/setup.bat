@@ -55,7 +55,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$s = (New-Object -ComObject WScript.Shell).CreateShortcut((Join-Path $desktop 'Caisse CafePOS.lnk'));" ^
   "$s.TargetPath = Join-Path $sys 'conhost.exe';" ^
   "$s.Arguments = '--headless \"' + (Join-Path $sys 'WindowsPowerShell\v1.0\powershell.exe') + '\" -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"%DEPLOY_DIR%launch-cafepos.ps1\"';" ^
-  "$s.WorkingDirectory = '%APP_DIR%'; $s.IconLocation = (Join-Path $sys 'shell32.dll') + ',15';" ^
+  "$s.WorkingDirectory = '%APP_DIR%'; $s.IconLocation = '%DEPLOY_DIR%cafepos.ico,0';" ^
   "$s.Description = 'Caisse CafePOS'; $s.WindowStyle = 7; $s.Save()"
 if errorlevel 1 (echo   WARNING: desktop icon failed) else (echo   OK)
 

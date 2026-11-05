@@ -14,22 +14,22 @@
     </div>
 
     {{-- Totals --}}
-    <x-filament::section :heading="'Résumé — ' . $monthLabel">
+    <x-filament::section :heading="__('Summary') . ' — ' . $monthLabel">
         <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-                <dt class="text-sm text-gray-500 dark:text-gray-400">Ventes</dt>
+                <dt class="text-sm text-gray-500 dark:text-gray-400">{{ __('Sales') }}</dt>
                 <dd class="text-xl font-semibold tabular-nums text-gray-950 dark:text-white">{{ Money::format($sales) }}</dd>
             </div>
             <div>
-                <dt class="text-sm text-gray-500 dark:text-gray-400">Achats du mois</dt>
+                <dt class="text-sm text-gray-500 dark:text-gray-400">{{ __('Purchases this month') }}</dt>
                 <dd class="text-xl font-semibold tabular-nums text-gray-950 dark:text-white">− {{ Money::format($purchases) }}</dd>
             </div>
             <div>
-                <dt class="text-sm text-gray-500 dark:text-gray-400">Charges fixes (mensualisées)</dt>
+                <dt class="text-sm text-gray-500 dark:text-gray-400">{{ __('Fixed expenses (monthly share)') }}</dt>
                 <dd class="text-xl font-semibold tabular-nums text-gray-950 dark:text-white">− {{ Money::format($fixed) }}</dd>
             </div>
             <div>
-                <dt class="text-sm text-gray-500 dark:text-gray-400">Bénéfice net</dt>
+                <dt class="text-sm text-gray-500 dark:text-gray-400">{{ __('Net profit') }}</dt>
                 <dd @class([
                     'text-xl font-bold tabular-nums',
                     'text-success-600 dark:text-success-400' => $netProfit >= 0,
@@ -38,24 +38,24 @@
             </div>
         </dl>
         <p class="mt-4 text-xs text-gray-500 dark:text-gray-400">
-            Bénéfice net = ventes − achats du mois − charges fixes mensualisées (comptabilité de caisse). Les commandes annulées sont exclues.
+            {{ __('Net profit = sales − purchases this month − monthly share of fixed expenses (cash basis). Cancelled orders are excluded.') }}
         </p>
     </x-filament::section>
 
     {{-- Per-product sales --}}
-    <x-filament::section heading="Ventes par produit">
+    <x-filament::section :heading="__('Sales by product')">
         @if ($products->isEmpty())
-            <p class="text-sm text-gray-500 dark:text-gray-400">Aucune vente ce mois-ci.</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('No sales this month.') }}</p>
         @else
             <div class="overflow-x-auto">
                 <table class="w-full divide-y divide-gray-200 dark:divide-white/10">
                     <thead>
                         <tr>
-                            <th class="{{ $th }}">Produit</th>
-                            <th class="{{ $thNum }}">Qté</th>
-                            <th class="{{ $thNum }}">Chiffre d'affaires</th>
-                            <th class="{{ $thNum }}">Coût estimé</th>
-                            <th class="{{ $thNum }}">Marge estimée</th>
+                            <th class="{{ $th }}">{{ __('Product') }}</th>
+                            <th class="{{ $thNum }}">{{ __('Qty') }}</th>
+                            <th class="{{ $thNum }}">{{ __('Revenue') }}</th>
+                            <th class="{{ $thNum }}">{{ __('Estimated cost') }}</th>
+                            <th class="{{ $thNum }}">{{ __('Estimated margin') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-white/5">
@@ -66,7 +66,7 @@
                                 <td class="{{ $tdNum }}">{{ Money::format($row->revenue) }}</td>
                                 <td class="{{ $tdNum }}">
                                     @if ($row->incomplete)
-                                        <span class="text-warning-600 dark:text-warning-400" title="Recette incomplète : coût estimé (minimum)">~</span>
+                                        <span class="text-warning-600 dark:text-warning-400" title="{{ __('Incomplete recipe: estimated (minimum) cost') }}">~</span>
                                     @endif
                                     {{ Money::format($row->estimated_cost) }}
                                 </td>
@@ -81,7 +81,7 @@
                     </tbody>
                     <tfoot>
                         <tr class="border-t-2 border-gray-300 dark:border-white/20">
-                            <td class="{{ $th }}">Total</td>
+                            <td class="{{ $th }}">{{ __('Total') }}</td>
                             <td class="{{ $thNum }}">{{ $products->sum('quantity') }}</td>
                             <td class="{{ $thNum }}">{{ Money::format($products->sum('revenue')) }}</td>
                             <td class="{{ $thNum }}">{{ Money::format($products->sum('estimated_cost')) }}</td>
@@ -92,22 +92,22 @@
             </div>
             @if ($products->contains('incomplete', true))
                 <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
-                    ~ = estimé : la recette est incomplète (quantités inconnues), le coût réel est plus élevé.
+                    {{ __('~ = estimated: the recipe is incomplete (unknown quantities), the real cost is higher.') }}
                 </p>
             @endif
         @endif
     </x-filament::section>
 
     {{-- Fixed expenses --}}
-    <x-filament::section heading="Charges fixes du mois" collapsible>
+    <x-filament::section :heading="__('Fixed expenses this month')" collapsible>
         <div class="overflow-x-auto">
             <table class="w-full divide-y divide-gray-200 dark:divide-white/10">
                 <thead>
                     <tr>
-                        <th class="{{ $th }}">Charge</th>
-                        <th class="{{ $thNum }}">Montant</th>
-                        <th class="{{ $thNum }}">Période</th>
-                        <th class="{{ $thNum }}">Par mois</th>
+                        <th class="{{ $th }}">{{ __('Expense') }}</th>
+                        <th class="{{ $thNum }}">{{ __('Amount') }}</th>
+                        <th class="{{ $thNum }}">{{ __('Period') }}</th>
+                        <th class="{{ $thNum }}">{{ __('Per month') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-white/5">
@@ -115,14 +115,14 @@
                         <tr>
                             <td class="{{ $td }}">{{ $line->name }}</td>
                             <td class="{{ $tdNum }}">{{ Money::format($line->amount) }}</td>
-                            <td class="{{ $tdNum }}">{{ $line->period_months }} mois</td>
+                            <td class="{{ $tdNum }}">{{ trans_choice(':count month|:count months', $line->period_months, ['count' => $line->period_months]) }}</td>
                             <td class="{{ $tdNum }}">{{ Money::format($line->monthly) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
                 <tfoot>
                     <tr class="border-t-2 border-gray-300 dark:border-white/20">
-                        <td class="{{ $th }}" colspan="3">Total</td>
+                        <td class="{{ $th }}" colspan="3">{{ __('Total') }}</td>
                         <td class="{{ $thNum }}">{{ Money::format($fixed) }}</td>
                     </tr>
                 </tfoot>
@@ -131,18 +131,18 @@
     </x-filament::section>
 
     {{-- Stock movements --}}
-    <x-filament::section heading="Mouvements de stock" collapsible>
+    <x-filament::section :heading="__('Stock movements')" collapsible>
         @if ($stock->isEmpty())
-            <p class="text-sm text-gray-500 dark:text-gray-400">Aucun mouvement de stock ce mois-ci.</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('No stock movements this month.') }}</p>
         @else
             <div class="overflow-x-auto">
                 <table class="w-full divide-y divide-gray-200 dark:divide-white/10">
                     <thead>
                         <tr>
-                            <th class="{{ $th }}">Ingrédient</th>
-                            <th class="{{ $thNum }}">Entrées</th>
-                            <th class="{{ $thNum }}">Sorties</th>
-                            <th class="{{ $thNum }}">Net</th>
+                            <th class="{{ $th }}">{{ __('Ingredient') }}</th>
+                            <th class="{{ $thNum }}">{{ __('In') }}</th>
+                            <th class="{{ $thNum }}">{{ __('Out') }}</th>
+                            <th class="{{ $thNum }}">{{ __('Net') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-white/5">

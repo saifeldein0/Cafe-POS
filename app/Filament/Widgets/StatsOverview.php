@@ -28,13 +28,13 @@ class StatsOverview extends StatsOverviewWidget
         $outOfStock = Ingredient::query()->where('current_stock', '<=', 0)->count();
 
         return [
-            Stat::make('Ventes du jour', Money::format($todaySales)),
-            Stat::make('Ventes du mois', Money::format($monthSales)),
-            Stat::make('Bénéfice net estimé (mois)', Money::format($netProfit))
-                ->description('Ventes − achats − charges fixes')
+            Stat::make(__('Sales today'), Money::format($todaySales)),
+            Stat::make(__('Sales this month'), Money::format($monthSales)),
+            Stat::make(__('Estimated net profit (month)'), Money::format($netProfit))
+                ->description(__('Sales − purchases − fixed expenses'))
                 ->color($netProfit >= 0 ? 'success' : 'danger'),
-            Stat::make('Ingrédients en rupture', (string) $outOfStock)
-                ->description('Stock nul ou négatif')
+            Stat::make(__('Out-of-stock ingredients'), (string) $outOfStock)
+                ->description(__('Zero or negative stock'))
                 ->color($outOfStock > 0 ? 'danger' : 'success'),
         ];
     }

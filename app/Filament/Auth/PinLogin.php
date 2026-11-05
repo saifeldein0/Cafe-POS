@@ -36,7 +36,7 @@ class PinLogin extends Login
             $seconds = RateLimiter::availableIn($key);
 
             throw ValidationException::withMessages([
-                'data.pin' => "Trop de tentatives. Réessayez dans {$seconds} secondes.",
+                'data.pin' => __('Too many attempts. Try again in :seconds seconds.', ['seconds' => $seconds]),
             ]);
         }
 
@@ -47,7 +47,7 @@ class PinLogin extends Login
             RateLimiter::hit($key, static::DECAY_SECONDS);
 
             throw ValidationException::withMessages([
-                'data.pin' => 'PIN incorrect.',
+                'data.pin' => __('Incorrect PIN.'),
             ]);
         }
 
@@ -87,23 +87,23 @@ class PinLogin extends Login
     #[Unexposed]
     public function getTitle(): string|Htmlable
     {
-        return 'Connexion';
+        return __('Login');
     }
 
     #[Unexposed]
     public function getHeading(): string|Htmlable|null
     {
-        return 'Espace gérant';
+        return __('Owner area');
     }
 
     protected function getAuthenticateFormAction(): Action
     {
-        return parent::getAuthenticateFormAction()->label('Se connecter');
+        return parent::getAuthenticateFormAction()->label(__('Sign in'));
     }
 
     #[Unexposed]
     public function getSubheading(): string|Htmlable|null
     {
-        return 'Entrez votre PIN';
+        return __('Enter your PIN');
     }
 }

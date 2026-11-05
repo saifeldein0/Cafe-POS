@@ -26,6 +26,12 @@ it('seeds the owner with the default PIN', function () {
     expect(Hash::check('1234', User::owner()->password))->toBeTrue();
 });
 
+it('serves the POS to guests without a login', function () {
+    $this->get('/pos')->assertSuccessful();
+
+    $this->assertGuest();
+});
+
 it('redirects guests from the dashboard to the PIN login page', function () {
     $this->get('/admin')->assertRedirect('/admin/login');
 });

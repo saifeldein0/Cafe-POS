@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Auth\PinLogin;
 use App\Filament\Pages\ChangePin;
+use App\Http\Middleware\SetLocale;
 use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -37,9 +38,13 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->userMenuItems([
                 'change-pin' => Action::make('change-pin')
-                    ->label('Changer le PIN')
+                    ->label(fn (): string => __('Change PIN'))
                     ->icon(Heroicon::OutlinedKey)
                     ->url(fn (): string => ChangePin::getUrl()),
+                'locale' => Action::make('locale')
+                    ->label(fn (): string => app()->getLocale() === 'fr' ? 'English' : 'Français')
+                    ->icon(Heroicon::OutlinedLanguage)
+                    ->url(fn (): string => route('locale', app()->getLocale() === 'fr' ? 'en' : 'fr')),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -52,6 +57,7 @@ class AdminPanelProvider extends PanelProvider
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
+                SetLocale::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 PreventRequestForgery::class,

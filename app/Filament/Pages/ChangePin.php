@@ -25,13 +25,19 @@ class ChangePin extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedKey;
 
-    protected static ?string $navigationLabel = 'Changer le PIN';
-
-    protected static ?string $title = 'Changer le PIN';
-
     protected static ?string $slug = 'changer-pin';
 
     protected static bool $shouldRegisterNavigation = false;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Change PIN');
+    }
+
+    public function getTitle(): string
+    {
+        return __('Change PIN');
+    }
 
     /**
      * @var array<string, mixed> | null
@@ -55,13 +61,13 @@ class ChangePin extends Page
         return $schema
             ->statePath('data')
             ->components([
-                $pin('current_pin', 'PIN actuel'),
-                $pin('new_pin', 'Nouveau PIN')
+                $pin('current_pin', __('Current PIN')),
+                $pin('new_pin', __('New PIN'))
                     ->rule('digits_between:4,8')
-                    ->validationMessages(['digits_between' => 'Le PIN doit contenir 4 à 8 chiffres.']),
-                $pin('new_pin_confirmation', 'Confirmer le nouveau PIN')
+                    ->validationMessages(['digits_between' => __('The PIN must have 4 to 8 digits.')]),
+                $pin('new_pin_confirmation', __('Confirm the new PIN'))
                     ->same('new_pin')
-                    ->validationMessages(['same' => 'Les deux PIN ne correspondent pas.']),
+                    ->validationMessages(['same' => __('The two PINs do not match.')]),
             ]);
     }
 
@@ -73,7 +79,7 @@ class ChangePin extends Page
                 ->livewireSubmitHandler('save')
                 ->footer([
                     Actions::make([
-                        Action::make('save')->label('Enregistrer')->submit('save'),
+                        Action::make('save')->label(__('Save'))->submit('save'),
                     ]),
                 ]),
         ]);
@@ -86,7 +92,7 @@ class ChangePin extends Page
 
         if (! Hash::check((string) $data['current_pin'], $user->password)) {
             throw ValidationException::withMessages([
-                'data.current_pin' => 'PIN actuel incorrect.',
+                'data.current_pin' => __('Current PIN is incorrect.'),
             ]);
         }
 
@@ -101,6 +107,6 @@ class ChangePin extends Page
 
         $this->form->fill();
 
-        Notification::make()->title('PIN modifié.')->success()->send();
+        Notification::make()->title(__('PIN changed.'))->success()->send();
     }
 }

@@ -1,0 +1,73 @@
+@import 'tailwindcss';
+
+@source '../views/livewire/**/*.blade.php';
+@source '../views/components/layouts/pos.blade.php';
+@source '../../app/Livewire/**/*.php';
+
+/* Cashier screen: system fonts only (works offline, nothing to download). */
+@theme {
+    --font-sans: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial,
+        sans-serif, 'Segoe UI Emoji', 'Apple Color Emoji';
+
+    --color-wash: #eef2f7;
+    --color-line: #d3dbe6;
+    --color-ink: #0f1b2d;
+    --color-muted: #4a5a70;
+    --color-sidi: #1b4f9c;
+    --color-go: #157a3a;
+    --color-go-dark: #0f622e;
+    --color-go-soft: #dcf3e3;
+    --color-stop: #b42318;
+    --color-stop-soft: #fde4e1;
+}
+
+html {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    overflow: hidden;
+    user-select: none;
+}
+
+/* Immediate tactile feedback on every tap target. */
+.pos-press {
+    cursor: pointer;
+    transition:
+        transform 80ms ease-out,
+        background-color 120ms ease-out,
+        border-color 120ms ease-out;
+}
+
+.pos-press:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+.pos-press:focus-visible {
+    outline: 3px solid var(--color-sidi);
+    outline-offset: 2px;
+}
+
+/* Confirmation banner fades out on its own after a few seconds. */
+.pos-notice {
+    animation: pos-notice 5s ease-in forwards;
+}
+
+@keyframes pos-notice {
+    0%,
+    80% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pos-press,
+    .pos-notice {
+        transition: none;
+        animation: none;
+    }
+}

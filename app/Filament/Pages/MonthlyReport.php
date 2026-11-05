@@ -18,10 +18,6 @@ class MonthlyReport extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
 
-    protected static ?string $navigationLabel = 'Rapport mensuel';
-
-    protected static ?string $title = 'Rapport mensuel';
-
     protected static ?string $slug = 'rapport-mensuel';
 
     protected static ?int $navigationSort = 6;
@@ -30,6 +26,16 @@ class MonthlyReport extends Page
 
     #[Url]
     public ?string $month = null;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Monthly report');
+    }
+
+    public function getTitle(): string
+    {
+        return __('Monthly report');
+    }
 
     public function mount(): void
     {
@@ -41,7 +47,7 @@ class MonthlyReport extends Page
     {
         return $schema->components([
             Select::make('month')
-                ->label('Mois')
+                ->label(__('Month'))
                 ->options(fn (): array => Months::options() + [$this->month => Months::label(Months::parse($this->month))])
                 ->selectablePlaceholder(false)
                 ->native(false)

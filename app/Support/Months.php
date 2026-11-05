@@ -26,7 +26,7 @@ class Months
 
     public static function label(CarbonImmutable $month): string
     {
-        return ucfirst($month->locale('fr')->translatedFormat('F Y'));
+        return ucfirst($month->locale(app()->getLocale())->translatedFormat('F Y'));
     }
 
     public static function parse(?string $value): CarbonImmutable

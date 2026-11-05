@@ -23,11 +23,17 @@ class OrderResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedReceiptPercent;
 
-    protected static ?string $modelLabel = 'commande';
-
-    protected static ?string $pluralModelLabel = 'commandes';
-
     protected static ?int $navigationSort = 1;
+
+    public static function getModelLabel(): string
+    {
+        return __('order');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('orders');
+    }
 
     public static function infolist(Schema $schema): Schema
     {

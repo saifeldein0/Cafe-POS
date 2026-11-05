@@ -24,11 +24,17 @@ class PurchaseResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;
 
-    protected static ?string $modelLabel = 'achat';
-
-    protected static ?string $pluralModelLabel = 'achats';
-
     protected static ?int $navigationSort = 4;
+
+    public static function getModelLabel(): string
+    {
+        return __('purchase');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('purchases');
+    }
 
     public static function form(Schema $schema): Schema
     {

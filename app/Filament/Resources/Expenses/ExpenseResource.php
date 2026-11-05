@@ -20,13 +20,19 @@ class ExpenseResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
 
-    protected static ?string $modelLabel = 'charge fixe';
-
-    protected static ?string $pluralModelLabel = 'charges fixes';
-
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static ?int $navigationSort = 5;
+
+    public static function getModelLabel(): string
+    {
+        return __('fixed expense');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('fixed expenses');
+    }
 
     public static function form(Schema $schema): Schema
     {

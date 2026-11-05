@@ -1,58 +1,108 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# CafePOS POS
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Point of sale and owner dashboard for the CafePOS cafe.
 
-## About Laravel
+- **Cashier screen** at `/pos`: tap products, take the order, done. No login.
+- **Owner dashboard** at `/admin`: orders, stock, purchases, expenses, products and recipes,
+  monthly report. PIN login (default `1234`).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Stack: Laravel 13, Filament v5, Livewire, SQLite. Runs fully offline on one Windows laptop;
+the owner opens the dashboard from his phone over the cafe Wi-Fi.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Development
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Requires PHP 8.3+, Composer and Node.
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
+npm install
+npm run build              # or: npm run dev
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed # creates database/database.sqlite if asked
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+`OWNER_PIN` in `.env` sets the owner PIN **when the owner account is first created** (default `1234`).
+After that, change it from the dashboard ("Changer le PIN").
 
-## Contributing
+Tests and formatting:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+php artisan test
+vendor/bin/pint --dirty
+```
 
-## Code of Conduct
+## Deploying to the cafe laptop
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+The laptop needs nothing installed: the package ships a portable PHP, `vendor/` and the built assets.
 
-## Security Vulnerabilities
+On the development machine:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```powershell
+powershell -ExecutionPolicy Bypass -File deploy\get-php.ps1   # portable PHP 8.3 -> deploy\php
+powershell -ExecutionPolicy Bypass -File deploy\package.ps1   # builds assets, writes ..\cafepos-release
+```
 
-## License
+Copy the `cafepos-release` folder to a USB stick, then onto the laptop's local disk
+(e.g. `C:\CafePOS`; **not** a OneDrive/Dropbox synced folder). On the laptop, right-click
+`deploy\setup.bat` -> **Run as administrator**. It:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+1. creates `.env` (production mode), the app key and a fresh database with the menu/recipes;
+2. opens TCP port 8000 in the firewall (rule "CafePOS POS");
+3. starts the app automatically at logon (minimized window);
+4. schedules a nightly backup at 23:30;
+5. puts a **Caisse CafePOS** shortcut on the desktop;
+6. prints the address for the owner's phone.
+
+`deploy\setup-app.bat` is the app-only part (no admin rights, no system changes). Both are safe
+to re-run: the existing `.env`, app key and database are kept. If you move the folder, run
+`deploy\setup-app.bat` again (it refreshes the cached paths).
+
+### Daily use
+
+- Start: automatic at logon, or double-click `deploy\start-cafepos.bat`. Keep its window open.
+- Cashier: the **Caisse CafePOS** desktop shortcut (`http://localhost:8000/pos`).
+- Owner, from the phone on the same Wi-Fi: `http://<laptop-IP>:8000/admin` (setup prints it).
+  - Give the laptop a fixed address in the router (**DHCP reservation**), otherwise the IP
+    and the phone bookmark can change.
+  - Disable sleep while the cafe is open (Settings -> System -> Power -> Sleep: Never when
+    plugged in), otherwise the phone loses access.
+
+### Backups
+
+- `php artisan app:backup` (or `deploy\backup.bat`) writes
+  `storage\backups\cafepos-YYYY-MM-DD-HHmmss.sqlite` (UTC time) using SQLite `VACUUM INTO`,
+  safe while the app is running, and keeps the newest 30.
+- Runs automatically every night at 23:30 (Task Scheduler, "CafePOS POS Backup").
+- Occasionally copy `storage\backups` to a USB stick: a backup on the same disk does not survive
+  a dead laptop.
+- To restore: stop the app, copy a backup over `database\database.sqlite`, start the app.
+
+### Owner tasks
+
+- **Change the PIN**: dashboard -> "Changer le PIN".
+- **Milk quantities**: drinks with milk are seeded with an *unknown* milk quantity (their cost
+  shows as an estimate). Fill it in: Products -> open the drink -> recipe -> Lait quantity.
+- **Re-seeding never overwrites his edits**: setup and `migrate --seed` only add missing
+  items (prices, recipes, stock and PIN he changed are kept).
+
+SQLite runs in WAL mode with a 5 s busy timeout (`config/database.php`), so the cashier and the
+phone can use the app at the same time.
+
+## Pour le patron (en français)
+
+**Démarrer l'application** : elle démarre toute seule quand on allume l'ordinateur et qu'on
+se connecte. Sinon, double-cliquez sur `deploy\start-cafepos.bat`. Une fenêtre noire
+"CafePOS POS" s'ouvre : **ne la fermez pas** pendant que le café est ouvert.
+
+**Caisse** : double-cliquez sur l'icône **Caisse CafePOS** sur le bureau
+(ou ouvrez `http://localhost:8000/pos` dans le navigateur).
+
+**Tableau de bord sur le téléphone** : le téléphone doit être connecté au Wi-Fi du café.
+Ouvrez `http://<adresse-de-l-ordinateur>:8000/admin` (l'adresse, du type `192.168.1.20`,
+est affichée à la fin de l'installation), puis entrez votre PIN (1234 au départ, changez-le
+dans "Changer le PIN"). Ajoutez la page aux favoris.
+
+**Sauvegardes** : faites automatiquement chaque nuit dans `storage\backups`. De temps en temps,
+copiez ce dossier sur une clé USB.

@@ -16,8 +16,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::firstOrCreate(
-            ['email' => 'owner@cafepos.local'],
-            ['name' => 'Owner', 'password' => env('OWNER_PASSWORD', 'cafepos')], // hashed by the model cast
+            ['email' => User::OWNER_EMAIL],
+            // The owner's password is the dashboard PIN (hashed by the model cast).
+            ['name' => 'Owner', 'password' => (string) env('OWNER_PIN', '1234')],
         );
 
         $this->call([

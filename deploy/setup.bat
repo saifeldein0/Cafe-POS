@@ -67,10 +67,23 @@ chcp 65001 >nul
 echo  Pour démarrer: double-cliquez sur l'icône Caisse CafePOS du bureau
 echo                 (starts the app hidden and opens http://localhost:8000/pos;
 echo                  no auto-start: do it again after each restart of the laptop)
+for /f "delims=" %%d in ('powershell -NoProfile -Command "[Environment]::GetFolderPath('Desktop')"') do set "URLDIR=%%d"
+set "URLFILE=%URLDIR%\Adresse telephone - CafePOS.txt"
+> "%URLFILE%" echo CAFEPOS - Tableau de bord depuis le telephone / Dashboard from the phone
+>> "%URLFILE%" echo.
+>> "%URLFILE%" echo Sur le meme Wi-Fi, ouvrez cette adresse dans le navigateur du telephone :
+>> "%URLFILE%" echo On the same Wi-Fi, open this address in the phone browser:
+>> "%URLFILE%" echo.
 echo  Owner (phone, same Wi-Fi - usually the 192.168.x.x address):
 for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /c:"IPv4"') do call :showip %%a
+>> "%URLFILE%" echo.
+>> "%URLFILE%" echo (S'il y a plusieurs adresses, prenez celle en 192.168.x.x)
+>> "%URLFILE%" echo (If there are several addresses, use the 192.168.x.x one)
+>> "%URLFILE%" echo Le portable doit etre allume et l'application demarree.
+>> "%URLFILE%" echo The laptop must be on and the app started.
 echo                  Works only while the laptop is on and the app is started.
 echo                  Ask for a DHCP reservation in the router so this address never changes.
+echo                  Also saved on the desktop: "Adresse telephone - CafePOS.txt"
 echo  Owner PIN     : 1234 by default - change it in the dashboard ^("Changer le PIN"^)
 echo  Backups       : storage\backups (every night at 23:30, if the laptop is on)
 echo ============================================================
@@ -82,6 +95,7 @@ endlocal & exit /b 0
 set "IP=%~1"
 for /f "tokens=1 delims=( " %%b in ("%IP%") do set "IP=%%b"
 echo                  http://%IP%:8000/admin
+>> "%URLFILE%" echo     http://%IP%:8000/admin
 exit /b 0
 
 :fail

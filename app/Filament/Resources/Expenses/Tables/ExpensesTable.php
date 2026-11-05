@@ -18,24 +18,24 @@ class ExpensesTable
             ->defaultSort('name')
             ->columns([
                 TextColumn::make('name')
-                    ->label('Nom')
+                    ->label(__('Name'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('amount')
-                    ->label('Montant')
+                    ->label(__('Amount'))
                     ->numeric(decimalPlaces: 3, decimalSeparator: '.', thousandsSeparator: ' ')
                     ->suffix(' DT')
                     ->sortable(),
                 TextColumn::make('period_months')
-                    ->label('Période')
-                    ->formatStateUsing(fn ($state): string => ExpenseForm::PERIODS[$state] ?? "par {$state} mois"),
+                    ->label(__('Period'))
+                    ->formatStateUsing(fn ($state): string => ExpenseForm::periodLabel($state)),
                 TextColumn::make('monthly')
-                    ->label('Par mois')
+                    ->label(__('Per month'))
                     ->state(fn (Expense $record): float => round($record->monthlyAmount(), 3))
                     ->numeric(decimalPlaces: 3, decimalSeparator: '.', thousandsSeparator: ' ')
                     ->suffix(' DT'),
                 ToggleColumn::make('is_active')
-                    ->label('Active'),
+                    ->label(__('Enabled')),
             ])
             ->recordActions([
                 EditAction::make(),

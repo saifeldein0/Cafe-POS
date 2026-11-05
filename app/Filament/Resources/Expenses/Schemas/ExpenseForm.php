@@ -9,33 +9,47 @@ use Filament\Schemas\Schema;
 
 class ExpenseForm
 {
-    public const PERIODS = [
-        1 => 'par mois',
-        3 => 'par 3 mois',
-    ];
+    public const PERIODS = [1, 3];
+
+    /**
+     * @return array<int, string>
+     */
+    public static function periodOptions(): array
+    {
+        return collect(self::PERIODS)
+            ->mapWithKeys(fn (int $months): array => [$months => self::periodLabel($months)])
+            ->all();
+    }
+
+    public static function periodLabel(int|string|null $months): string
+    {
+        return (int) $months === 1
+            ? __('per month')
+            : __('every :count months', ['count' => (int) $months]);
+    }
 
     public static function configure(Schema $schema): Schema
     {
         return $schema
             ->components([
                 TextInput::make('name')
-                    ->label('Nom')
+                    ->label(__('Name'))
                     ->required()
                     ->maxLength(255),
                 TextInput::make('amount')
-                    ->label('Montant')
+                    ->label(__('Amount'))
                     ->numeric()
                     ->step(0.001)
                     ->minValue(0)
                     ->required()
                     ->suffix('DT'),
                 Select::make('period_months')
-                    ->label('Période')
-                    ->options(self::PERIODS)
+                    ->label(__('Period'))
+                    ->options(self::periodOptions())
                     ->default(1)
                     ->required(),
                 Toggle::make('is_active')
-                    ->label('Active')
+                    ->label(__('Enabled'))
                     ->default(true),
             ]);
     }

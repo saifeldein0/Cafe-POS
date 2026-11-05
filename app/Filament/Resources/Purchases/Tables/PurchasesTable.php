@@ -21,37 +21,37 @@ class PurchasesTable
             ->defaultSort(fn (Builder $query) => $query->orderByDesc('purchased_at')->orderByDesc('id'))
             ->columns([
                 TextColumn::make('purchased_at')
-                    ->label('Date')
+                    ->label(__('Date'))
                     ->date('d/m/Y')
                     ->sortable(),
                 TextColumn::make('ingredient.name')
-                    ->label('Ingrédient')
+                    ->label(__('Ingredient'))
                     ->searchable(),
                 TextColumn::make('packages')
-                    ->label('Cond.')
+                    ->label(__('Pkg.'))
                     ->numeric(decimalPlaces: 3, decimalSeparator: '.', thousandsSeparator: ' '),
                 TextColumn::make('quantity')
-                    ->label('Quantité')
+                    ->label(__('Quantity'))
                     ->numeric(decimalPlaces: 3, decimalSeparator: '.', thousandsSeparator: ' ')
-                    ->suffix(fn (Purchase $record): string => ' '.$record->ingredient->unit),
+                    ->suffix(fn (Purchase $record): string => ' '.$record->ingredient->unitLabel()),
                 TextColumn::make('total_cost')
-                    ->label('Coût total')
+                    ->label(__('Total cost'))
                     ->numeric(decimalPlaces: 3, decimalSeparator: '.', thousandsSeparator: ' ')
                     ->suffix(' DT')
                     ->summarize(
                         Sum::make()
-                            ->label('Total')
+                            ->label(__('Total'))
                             ->numeric(decimalPlaces: 3, decimalSeparator: '.', thousandsSeparator: ' ')
                             ->suffix(' DT'),
                     ),
                 TextColumn::make('note')
-                    ->label('Note')
+                    ->label(__('Note'))
                     ->limit(40)
                     ->toggleable(),
             ])
             ->filters([
                 SelectFilter::make('month')
-                    ->label('Mois')
+                    ->label(__('Month'))
                     ->options(Months::options())
                     ->default(now()->format('Y-m'))
                     ->query(function (Builder $query, array $data): Builder {
@@ -68,7 +68,7 @@ class PurchasesTable
             ])
             ->recordActions([
                 DeleteAction::make()
-                    ->modalDescription('Le stock de l\'ingrédient sera diminué de la quantité achetée.')
+                    ->modalDescription(__('The ingredient stock will be reduced by the purchased quantity.'))
                     ->using(function (Purchase $record): bool {
                         app(PurchaseService::class)->delete($record);
 

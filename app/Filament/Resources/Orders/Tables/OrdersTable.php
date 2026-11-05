@@ -22,23 +22,23 @@ class OrdersTable
             ->defaultSort('created_at', 'desc')
             ->columns([
                 TextColumn::make('id')
-                    ->label('N°')
+                    ->label(__('No.'))
                     ->sortable(),
                 TextColumn::make('created_at')
-                    ->label('Date')
+                    ->label(__('Date'))
                     ->dateTime('d/m/Y H:i')
                     ->sortable(),
                 TextColumn::make('total')
-                    ->label('Total')
+                    ->label(__('Total'))
                     ->numeric(decimalPlaces: 3, decimalSeparator: '.', thousandsSeparator: ' ')
                     ->suffix(' DT')
                     ->sortable(),
                 TextColumn::make('items_count')
-                    ->label('Articles')
+                    ->label(__('Items'))
                     ->numeric(),
                 TextColumn::make('status')
-                    ->label('Statut')
-                    ->state(fn (Order $record): ?string => $record->isCancelled() ? 'Annulée' : null)
+                    ->label(__('Status'))
+                    ->state(fn (Order $record): ?string => $record->isCancelled() ? __('Cancelled') : null)
                     ->badge()
                     ->color('danger')
                     ->placeholder('—'),
@@ -46,10 +46,10 @@ class OrdersTable
             ->recordClasses(fn (Order $record): ?string => $record->isCancelled() ? 'opacity-60' : null)
             ->filters([
                 Filter::make('created_at')
-                    ->label('Période')
+                    ->label(__('Period'))
                     ->schema([
-                        DatePicker::make('from')->label('Du'),
-                        DatePicker::make('until')->label('Au'),
+                        DatePicker::make('from')->label(__('From')),
+                        DatePicker::make('until')->label(__('To')),
                     ])
                     ->query(fn (Builder $query, array $data): Builder => $query
                         ->when($data['from'] ?? null, fn (Builder $q, $date) => $q->where('created_at', '>=', Carbon::parse($date)->startOfDay()))
@@ -57,20 +57,20 @@ class OrdersTable
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['from'] ?? null) {
-                            $indicators[] = 'Du '.Carbon::parse($data['from'])->format('d/m/Y');
+                            $indicators[] = __('From :date', ['date' => Carbon::parse($data['from'])->format('d/m/Y')]);
                         }
                         if ($data['until'] ?? null) {
-                            $indicators[] = 'Au '.Carbon::parse($data['until'])->format('d/m/Y');
+                            $indicators[] = __('To :date', ['date' => Carbon::parse($data['until'])->format('d/m/Y')]);
                         }
 
                         return $indicators;
                     }),
                 TernaryFilter::make('cancelled_at')
-                    ->label('Statut')
+                    ->label(__('Status'))
                     ->nullable()
-                    ->placeholder('Toutes')
-                    ->trueLabel('Annulées')
-                    ->falseLabel('Valides'),
+                    ->placeholder(__('All orders'))
+                    ->trueLabel(__('Cancelled only'))
+                    ->falseLabel(__('Valid only')),
             ])
             ->recordActions([
                 ViewAction::make(),

@@ -18,29 +18,32 @@ class IngredientsTable
             ->defaultSort('name')
             ->columns([
                 TextColumn::make('name')
-                    ->label('Nom')
+                    ->label(__('Name'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('current_stock')
-                    ->label('Stock')
+                    ->label(__('Stock'))
                     ->numeric(decimalPlaces: 3, decimalSeparator: '.', thousandsSeparator: ' ')
-                    ->suffix(fn (Ingredient $record): string => ' '.$record->unit)
+                    ->suffix(fn (Ingredient $record): string => ' '.$record->unitLabel())
                     ->color(fn (Ingredient $record): ?string => (float) $record->current_stock <= 0 ? 'danger' : null)
                     ->weight(fn (Ingredient $record): ?string => (float) $record->current_stock <= 0 ? 'bold' : null)
                     ->sortable(),
                 TextColumn::make('last_unit_cost')
-                    ->label('Coût unitaire')
+                    ->label(__('Unit cost'))
                     ->numeric(decimalPlaces: 4, decimalSeparator: '.', thousandsSeparator: ' ')
-                    ->suffix(fn (Ingredient $record): string => ' DT/'.$record->unit)
+                    ->suffix(fn (Ingredient $record): string => ' DT/'.$record->unitLabel())
                     ->sortable(),
                 TextColumn::make('package_name')
-                    ->label('Conditionnement')
-                    ->description(fn (Ingredient $record): string => self::trimDecimal($record->units_per_package).' '.$record->unit.' / conditionnement')
+                    ->label(__('Package'))
+                    ->description(fn (Ingredient $record): string => __(':quantity :unit / package', [
+                        'quantity' => self::trimDecimal($record->units_per_package),
+                        'unit' => $record->unitLabel(),
+                    ]))
                     ->placeholder('—'),
             ])
             ->filters([
                 Filter::make('out_of_stock')
-                    ->label('Stock nul ou négatif')
+                    ->label(__('Zero or negative stock'))
                     ->query(fn (Builder $query) => $query->where('current_stock', '<=', 0)),
             ])
             ->recordActions([

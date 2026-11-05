@@ -19,32 +19,32 @@ class OrderInfolist
                     ->columns(4)
                     ->schema([
                         TextEntry::make('id')
-                            ->label('N°'),
+                            ->label(__('No.')),
                         TextEntry::make('created_at')
-                            ->label('Date')
+                            ->label(__('Date'))
                             ->dateTime('d/m/Y H:i'),
                         TextEntry::make('total')
-                            ->label('Total')
+                            ->label(__('Total'))
                             ->numeric(decimalPlaces: 3, decimalSeparator: '.', thousandsSeparator: ' ')
                             ->suffix(' DT')
                             ->weight('bold'),
                         TextEntry::make('cancelled_at')
-                            ->label('Annulée le')
+                            ->label(__('Cancelled on'))
                             ->dateTime('d/m/Y H:i')
                             ->badge()
                             ->color('danger')
                             ->placeholder('—')
                             ->visible(fn (Order $record): bool => $record->isCancelled()),
                     ]),
-                Section::make('Articles')
+                Section::make(__('Items'))
                     ->schema([
                         RepeatableEntry::make('items')
                             ->hiddenLabel()
                             ->table([
-                                RepeatableEntry\TableColumn::make('Produit'),
-                                RepeatableEntry\TableColumn::make('Prix unitaire'),
-                                RepeatableEntry\TableColumn::make('Qté'),
-                                RepeatableEntry\TableColumn::make('Total'),
+                                RepeatableEntry\TableColumn::make(__('Product')),
+                                RepeatableEntry\TableColumn::make(__('Unit price')),
+                                RepeatableEntry\TableColumn::make(__('Qty')),
+                                RepeatableEntry\TableColumn::make(__('Total')),
                             ])
                             ->schema([
                                 TextEntry::make('product_name'),

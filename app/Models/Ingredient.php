@@ -11,6 +11,29 @@ class Ingredient extends Model
 
     protected $guarded = [];
 
+    /**
+     * Translated, user-facing label for a unit code (g, ml, piece).
+     */
+    public static function labelForUnit(?string $unit): string
+    {
+        return $unit === 'piece' ? __('piece') : (string) $unit;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function unitOptions(): array
+    {
+        return collect(self::UNITS)
+            ->mapWithKeys(fn (string $unit): array => [$unit => self::labelForUnit($unit)])
+            ->all();
+    }
+
+    public function unitLabel(): string
+    {
+        return self::labelForUnit($this->unit);
+    }
+
     protected function casts(): array
     {
         return [

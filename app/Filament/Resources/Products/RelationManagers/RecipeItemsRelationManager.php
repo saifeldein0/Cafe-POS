@@ -12,24 +12,34 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rules\Unique;
 
 class RecipeItemsRelationManager extends RelationManager
 {
     protected static string $relationship = 'recipeItems';
 
-    protected static ?string $title = 'Recette';
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return __('Recipe');
+    }
 
-    protected static ?string $modelLabel = 'ingrédient';
+    protected static function getModelLabel(): ?string
+    {
+        return __('ingredient');
+    }
 
-    protected static ?string $pluralModelLabel = 'ingrédients';
+    protected static function getPluralModelLabel(): ?string
+    {
+        return __('ingredients');
+    }
 
     public function form(Schema $schema): Schema
     {
         return $schema
             ->components([
                 Select::make('ingredient_id')
-                    ->label('Ingrédient')
+                    ->label(__('Ingredient'))
                     ->relationship('ingredient', 'name')
                     ->searchable()
                     ->preload()
@@ -39,12 +49,12 @@ class RecipeItemsRelationManager extends RelationManager
                         modifyRuleUsing: fn (Unique $rule) => $rule->where('product_id', $this->getOwnerRecord()->getKey()),
                     ),
                 TextInput::make('quantity')
-                    ->label('Quantité')
+                    ->label(__('Quantity'))
                     ->numeric()
                     ->minValue(0)
                     ->step(0.001)
-                    ->placeholder('inconnu')
-                    ->helperText('Laisser vide si la quantité est inconnue.'),
+                    ->placeholder(__('unknown'))
+                    ->helperText(__('Leave empty if the quantity is unknown.')),
             ]);
     }
 
@@ -54,14 +64,14 @@ class RecipeItemsRelationManager extends RelationManager
             ->modifyQueryUsing(fn ($query) => $query->with('ingredient'))
             ->columns([
                 TextColumn::make('ingredient.name')
-                    ->label('Ingrédient'),
+                    ->label(__('Ingredient')),
                 TextColumn::make('quantity')
-                    ->label('Quantité')
-                    ->formatStateUsing(fn ($state, RecipeItem $record) => rtrim(rtrim(number_format((float) $state, 3, '.', ''), '0'), '.').' '.$record->ingredient->unit)
-                    ->placeholder('inconnu')
+                    ->label(__('Quantity'))
+                    ->formatStateUsing(fn ($state, RecipeItem $record) => rtrim(rtrim(number_format((float) $state, 3, '.', ''), '0'), '.').' '.$record->ingredient->unitLabel())
+                    ->placeholder(__('unknown'))
                     ->color(fn (RecipeItem $record) => $record->quantity === null ? 'warning' : null),
                 TextColumn::make('line_cost')
-                    ->label('Coût')
+                    ->label(__('Cost'))
                     ->state(fn (RecipeItem $record): ?float => $record->quantity === null
                         ? null
                         : round((float) $record->quantity * (float) $record->ingredient->last_unit_cost, 3))

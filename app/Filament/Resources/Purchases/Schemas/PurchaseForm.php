@@ -17,7 +17,7 @@ class PurchaseForm
         return $schema
             ->components([
                 Select::make('ingredient_id')
-                    ->label('Ingrédient')
+                    ->label(__('Ingredient'))
                     ->relationship('ingredient', 'name')
                     ->searchable()
                     ->preload()
@@ -25,7 +25,7 @@ class PurchaseForm
                     ->live()
                     ->afterStateUpdated(fn (Get $get, Set $set) => self::computeQuantity($get, $set)),
                 TextInput::make('packages')
-                    ->label('Nombre de conditionnements')
+                    ->label(__('Number of packages'))
                     ->helperText(fn (Get $get): ?string => self::packageHint($get('ingredient_id')))
                     ->numeric()
                     ->step(0.001)
@@ -35,27 +35,27 @@ class PurchaseForm
                     ->live(onBlur: true)
                     ->afterStateUpdated(fn (Get $get, Set $set) => self::computeQuantity($get, $set)),
                 TextInput::make('quantity')
-                    ->label('Quantité reçue')
-                    ->helperText('Calculée automatiquement (conditionnements × unités), modifiable.')
+                    ->label(__('Quantity received'))
+                    ->helperText(__('Calculated automatically (packages × units), editable.'))
                     ->numeric()
                     ->step(0.001)
                     ->minValue(0.001)
                     ->required()
-                    ->suffix(fn (Get $get): ?string => Ingredient::find($get('ingredient_id'))?->unit),
+                    ->suffix(fn (Get $get): ?string => Ingredient::find($get('ingredient_id'))?->unitLabel()),
                 TextInput::make('total_cost')
-                    ->label('Coût total')
+                    ->label(__('Total cost'))
                     ->numeric()
                     ->step(0.001)
                     ->minValue(0)
                     ->required()
                     ->suffix('DT'),
                 DatePicker::make('purchased_at')
-                    ->label('Date d\'achat')
+                    ->label(__('Purchase date'))
                     ->default(now())
                     ->maxDate(now()->endOfDay())
                     ->required(),
                 TextInput::make('note')
-                    ->label('Note')
+                    ->label(__('Note'))
                     ->maxLength(255),
             ]);
     }
@@ -82,6 +82,6 @@ class PurchaseForm
 
         $units = rtrim(rtrim(number_format((float) $ingredient->units_per_package, 3, '.', ''), '0'), '.');
 
-        return trim(($ingredient->package_name ?? 'Conditionnement').' = '.$units.' '.$ingredient->unit);
+        return trim(($ingredient->package_name ?? __('Package')).' = '.$units.' '.$ingredient->unitLabel());
     }
 }

@@ -2,7 +2,8 @@
 rem One-time installation of CafePOS POS on the cafe laptop.
 rem Right-click -> "Run as administrator".
 rem   1. App setup (setup-app.bat): .env, key, database, caches
-rem   2. Windows setup: firewall rule, auto-start, nightly backup, desktop shortcut
+rem   2. Windows setup: firewall rule, nightly backup, desktop icon
+rem No auto-start: the "Caisse CafePOS" desktop icon starts the server (hidden) and opens the till.
 title CafePOS POS - Installation
 setlocal
 
@@ -39,34 +40,39 @@ netsh advfirewall firewall delete rule name="CafePOS POS" >nul 2>&1
 netsh advfirewall firewall add rule name="CafePOS POS" dir=in action=allow protocol=TCP localport=8000 >nul
 if errorlevel 1 (echo   WARNING: firewall rule failed) else (echo   OK)
 
-echo [b] Start the app automatically at logon (minimized)...
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$s = (New-Object -ComObject WScript.Shell).CreateShortcut([IO.Path]::Combine([Environment]::GetFolderPath('Startup'), 'CafePOS POS.lnk'));" ^
-  "$s.TargetPath = '%DEPLOY_DIR%start-cafepos.bat'; $s.WorkingDirectory = '%APP_DIR%'; $s.WindowStyle = 7; $s.Save()"
-if errorlevel 1 (echo   WARNING: startup shortcut failed) else (echo   OK)
-
-echo [c] Nightly backup at 23:30...
+echo [b] Nightly backup at 23:30 (runs only if the laptop is on)...
 schtasks /create /tn "CafePOS POS Backup" /tr "\"%DEPLOY_DIR%backup.bat\"" /sc daily /st 23:30 /f >nul
 if errorlevel 1 (echo   WARNING: scheduled task failed) else (echo   OK)
 
-echo [d] Desktop shortcut "Caisse CafePOS"...
+echo [c] Desktop icon "Caisse CafePOS" (starts the app and opens the till)...
+rem Shortcut -> conhost --headless -> hidden PowerShell -> deploy\launch-cafepos.ps1:
+rem no console window, even when Windows Terminal is the default terminal.
+rem Also removes what older versions created (Startup-folder auto-start, .url shortcut).
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$s = (New-Object -ComObject WScript.Shell).CreateShortcut([IO.Path]::Combine([Environment]::GetFolderPath('Desktop'), 'Caisse CafePOS.url'));" ^
-  "$s.TargetPath = 'http://localhost:8000/pos'; $s.Save()"
-if errorlevel 1 (echo   WARNING: desktop shortcut failed) else (echo   OK)
+  "$startup = [IO.Path]::Combine([Environment]::GetFolderPath('Startup'), 'CafePOS POS.lnk'); if (Test-Path $startup) { Remove-Item $startup -Force };" ^
+  "$desktop = [Environment]::GetFolderPath('Desktop'); $old = Join-Path $desktop 'Caisse CafePOS.url'; if (Test-Path $old) { Remove-Item $old -Force };" ^
+  "$sys = [Environment]::SystemDirectory;" ^
+  "$s = (New-Object -ComObject WScript.Shell).CreateShortcut((Join-Path $desktop 'Caisse CafePOS.lnk'));" ^
+  "$s.TargetPath = Join-Path $sys 'conhost.exe';" ^
+  "$s.Arguments = '--headless \"' + (Join-Path $sys 'WindowsPowerShell\v1.0\powershell.exe') + '\" -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"%DEPLOY_DIR%launch-cafepos.ps1\"';" ^
+  "$s.WorkingDirectory = '%APP_DIR%'; $s.IconLocation = (Join-Path $sys 'shell32.dll') + ',15';" ^
+  "$s.Description = 'Caisse CafePOS'; $s.WindowStyle = 7; $s.Save()"
+if errorlevel 1 (echo   WARNING: desktop icon failed) else (echo   OK)
 
 echo.
 echo ============================================================
 echo  Installation complete
 echo ============================================================
-echo  Start now     : double-click deploy\start-cafepos.bat
-echo                  (starts automatically at every logon)
-echo  Cashier (here): "Caisse CafePOS" on the desktop
-echo                  = http://localhost:8000/pos
+chcp 65001 >nul
+echo  Pour démarrer: double-cliquez sur l'icône Caisse CafePOS du bureau
+echo                 (starts the app hidden and opens http://localhost:8000/pos;
+echo                  no auto-start: do it again after each restart of the laptop)
 echo  Owner (phone, same Wi-Fi - usually the 192.168.x.x address):
 for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /c:"IPv4"') do call :showip %%a
+echo                  Works only while the laptop is on and the app is started.
+echo                  Ask for a DHCP reservation in the router so this address never changes.
 echo  Owner PIN     : 1234 by default - change it in the dashboard ^("Changer le PIN"^)
-echo  Backups       : storage\backups (every night at 23:30)
+echo  Backups       : storage\backups (every night at 23:30, if the laptop is on)
 echo ============================================================
 echo.
 pause

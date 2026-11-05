@@ -14,28 +14,28 @@ class AdjustStockAction
     public static function make(): Action
     {
         return Action::make('adjustStock')
-            ->label('Ajuster le stock')
+            ->label(__('Adjust stock'))
             ->icon(Heroicon::OutlinedAdjustmentsHorizontal)
-            ->modalHeading(fn (Ingredient $record): string => "Ajuster le stock : {$record->name}")
-            ->modalDescription('Quantité positive pour ajouter, négative pour retirer (casse, perte, inventaire).')
+            ->modalHeading(fn (Ingredient $record): string => __('Adjust stock: :name', ['name' => $record->name]))
+            ->modalDescription(__('Positive quantity to add, negative to remove (breakage, loss, stock count).'))
             ->schema([
                 TextInput::make('quantity')
-                    ->label('Quantité (+/−)')
+                    ->label(__('Quantity (+/−)'))
                     ->numeric()
                     ->step(0.001)
                     ->required()
                     ->notIn(['0'])
-                    ->suffix(fn (Ingredient $record): string => $record->unit),
+                    ->suffix(fn (Ingredient $record): string => $record->unitLabel()),
                 TextInput::make('note')
-                    ->label('Note')
+                    ->label(__('Note'))
                     ->maxLength(255),
             ])
             ->action(function (Ingredient $record, array $data): void {
                 app(StockService::class)->adjust($record, (float) $data['quantity'], $data['note'] ?? null);
 
                 Notification::make()
-                    ->title('Stock ajusté')
-                    ->body("Nouveau stock : {$record->current_stock} {$record->unit}")
+                    ->title(__('Stock adjusted'))
+                    ->body(__('New stock: :stock :unit', ['stock' => $record->current_stock, 'unit' => $record->unitLabel()]))
                     ->success()
                     ->send();
             });

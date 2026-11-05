@@ -149,9 +149,9 @@
                         @foreach ($stock as $row)
                             <tr>
                                 <td class="{{ $td }}">{{ $row->name }}</td>
-                                <td class="{{ $tdNum }}">{{ $qty($row->in) }} {{ $row->unit }}</td>
-                                <td class="{{ $tdNum }}">{{ $qty($row->out) }} {{ $row->unit }}</td>
-                                <td class="{{ $tdNum }}">{{ $qty($row->net) }} {{ $row->unit }}</td>
+                                <td class="{{ $tdNum }}">{{ $qty($row->in) }} {{ \App\Models\Ingredient::labelForUnit($row->unit) }}</td>
+                                <td class="{{ $tdNum }}">{{ $qty($row->out) }} {{ \App\Models\Ingredient::labelForUnit($row->unit) }}</td>
+                                <td class="{{ $tdNum }}">{{ $qty($row->net) }} {{ \App\Models\Ingredient::labelForUnit($row->unit) }}</td>
                             </tr>
                         @endforeach
                     </tbody>

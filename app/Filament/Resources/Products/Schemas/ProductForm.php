@@ -14,28 +14,28 @@ class ProductForm
         return $schema
             ->components([
                 Select::make('category_id')
-                    ->label('Catégorie')
+                    ->label(__('Category'))
                     ->relationship('category', 'name')
                     ->required(),
                 TextInput::make('name')
-                    ->label('Nom')
+                    ->label(__('Name'))
                     ->required()
                     ->maxLength(255),
                 TextInput::make('price')
-                    ->label('Prix')
+                    ->label(__('Price'))
                     ->required()
                     ->numeric()
                     ->minValue(0)
                     ->step(0.001)
                     ->suffix('DT'),
                 TextInput::make('sort_order')
-                    ->label('Ordre')
+                    ->label(__('Sort order'))
                     ->required()
                     ->integer()
                     ->minValue(0)
                     ->default(0),
                 Toggle::make('is_active')
-                    ->label('Actif')
+                    ->label(__('Active'))
                     ->default(true),
             ]);
     }

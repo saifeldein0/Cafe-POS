@@ -1,5 +1,7 @@
 @echo off
 rem Starts the CafePOS POS server on port 8000 (reachable from the phone on the same Wi-Fi).
+rem The desktop icon runs it hidden through launch-cafepos.ps1; run it directly to see the
+rem server console (closing the window stops the server). CAFEPOS_PORT overrides the port.
 title CafePOS POS
 setlocal
 

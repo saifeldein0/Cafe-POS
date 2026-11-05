@@ -19,30 +19,30 @@ class ProductsTable
             ->defaultSort('sort_order')
             ->columns([
                 TextColumn::make('name')
-                    ->label('Nom')
+                    ->label(__('Name'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('category.name')
-                    ->label('Catégorie')
+                    ->label(__('Category'))
                     ->sortable(),
                 TextColumn::make('price')
-                    ->label('Prix')
+                    ->label(__('Price'))
                     ->numeric(decimalPlaces: 3, decimalSeparator: '.', thousandsSeparator: ' ')
                     ->suffix(' DT')
                     ->sortable(),
                 TextColumn::make('estimated_cost')
-                    ->label('Coût estimé')
+                    ->label(__('Estimated cost'))
                     ->state(fn (Product $record): ?float => $record->recipeCost())
                     ->numeric(decimalPlaces: 3, decimalSeparator: '.', thousandsSeparator: ' ')
                     ->suffix(' DT')
                     ->placeholder('—'),
                 TextColumn::make('recipe_status')
-                    ->label('Recette')
-                    ->state(fn (Product $record): string => $record->hasIncompleteRecipe() ? 'incomplet' : 'complète')
+                    ->label(__('Recipe'))
+                    ->state(fn (Product $record): string => $record->hasIncompleteRecipe() ? __('incomplete') : __('complete'))
                     ->badge()
-                    ->color(fn (string $state): string => $state === 'incomplet' ? 'warning' : 'success'),
+                    ->color(fn (Product $record): string => $record->hasIncompleteRecipe() ? 'warning' : 'success'),
                 TextColumn::make('margin')
-                    ->label('Marge')
+                    ->label(__('Margin'))
                     ->state(fn (Product $record): ?float => $record->hasIncompleteRecipe()
                         ? null
                         : round((float) $record->price - (float) $record->recipeCost(), 3))
@@ -50,15 +50,15 @@ class ProductsTable
                     ->suffix(' DT')
                     ->placeholder('—'),
                 IconColumn::make('is_active')
-                    ->label('Actif')
+                    ->label(__('Active'))
                     ->boolean(),
             ])
             ->filters([
                 SelectFilter::make('category_id')
-                    ->label('Catégorie')
+                    ->label(__('Category'))
                     ->relationship('category', 'name'),
                 TernaryFilter::make('is_active')
-                    ->label('Actif'),
+                    ->label(__('Active')),
             ])
             ->recordActions([
                 EditAction::make(),

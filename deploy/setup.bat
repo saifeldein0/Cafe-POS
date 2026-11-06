@@ -44,7 +44,7 @@ echo [b] Nightly backup at 23:30 (runs only if the laptop is on)...
 schtasks /create /tn "CafePOS POS Backup" /tr "\"%DEPLOY_DIR%backup.bat\"" /sc daily /st 23:30 /f >nul
 if errorlevel 1 (echo   WARNING: scheduled task failed) else (echo   OK)
 
-echo [c] Desktop icon "Caisse CafePOS" (starts the app and opens the till)...
+echo [c] Desktop icons "Caisse CafePOS" (till) and "Gerant CafePOS" (dashboard)...
 rem Shortcut -> conhost --headless -> hidden PowerShell -> deploy\launch-cafepos.ps1:
 rem no console window, even when Windows Terminal is the default terminal.
 rem Also removes what older versions created (Startup-folder auto-start, .url shortcut).
@@ -56,7 +56,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$s.TargetPath = Join-Path $sys 'conhost.exe';" ^
   "$s.Arguments = '--headless \"' + (Join-Path $sys 'WindowsPowerShell\v1.0\powershell.exe') + '\" -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"%DEPLOY_DIR%launch-cafepos.ps1\"';" ^
   "$s.WorkingDirectory = '%APP_DIR%'; $s.IconLocation = '%DEPLOY_DIR%cafepos.ico,0';" ^
-  "$s.Description = 'Caisse CafePOS'; $s.WindowStyle = 7; $s.Save()"
+  "$s.Description = 'Caisse CafePOS'; $s.WindowStyle = 7; $s.Save();" ^
+  "$a = (New-Object -ComObject WScript.Shell).CreateShortcut((Join-Path $desktop 'Gerant CafePOS.lnk'));" ^
+  "$a.TargetPath = $s.TargetPath; $a.Arguments = $s.Arguments + ' -Page admin';" ^
+  "$a.WorkingDirectory = '%APP_DIR%'; $a.IconLocation = '%DEPLOY_DIR%cafepos.ico,0';" ^
+  "$a.Description = 'Gerant CafePOS'; $a.WindowStyle = 7; $a.Save()"
 if errorlevel 1 (echo   WARNING: desktop icon failed) else (echo   OK)
 
 echo.
@@ -65,7 +69,7 @@ echo  Installation complete
 echo ============================================================
 chcp 65001 >nul
 echo  Pour démarrer: double-cliquez sur l'icône Caisse CafePOS du bureau
-echo                 (starts the app hidden and opens http://localhost:8000/pos;
+echo                 (starts the app hidden and opens the till in its own window;
 echo                  no auto-start: do it again after each restart of the laptop)
 for /f "delims=" %%d in ('powershell -NoProfile -Command "[Environment]::GetFolderPath('Desktop')"') do set "URLDIR=%%d"
 set "URLFILE=%URLDIR%\Adresse telephone - CafePOS.txt"

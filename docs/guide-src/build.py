@@ -283,7 +283,7 @@ FR = dict(
     s1=("Démarrer", "Chaque matin, en ouvrant le café.", [
         "Allumez l'ordinateur portable.",
         f"Sur le bureau, double-cliquez sur l'icône {b('Caisse CafePOS')}.",
-        "Attendez quelques secondes : la caisse s'ouvre toute seule dans le navigateur internet.",
+        "Attendez quelques secondes : la caisse s'ouvre toute seule dans sa propre fenêtre.",
     ]),
     s1_tips=[
         f"{b('Rien ne se passe ?')} Attendez 30 secondes, puis double-cliquez encore sur l'icône. "
@@ -306,7 +306,7 @@ FR = dict(
     ],
     s2_caption="La caisse avec une commande en cours : 2 Express, 1 Cappucine, 1 Eau 0.5, 2 Croissants.",
     s3=("Le tableau de bord", "Réservé au gérant. Il est protégé par un code secret (le PIN).", [
-        f"Dans le navigateur, allez à l'adresse {b('localhost:8000/admin')}.",
+        f"Sur le bureau, double-cliquez sur l'icône {b('Gerant CafePOS')}.",
         f"Tapez votre {b('PIN')}, puis touchez {b('Se connecter')}.",
     ]),
     s3_pin_tip=f"Le PIN de départ est {b('1234')} (sauf si l'installateur vous en a donné un autre).",
@@ -404,7 +404,7 @@ EN = dict(
     s1=("Getting started", "Every morning, when you open the cafe.", [
         "Switch on the laptop.",
         f"On the desktop, double-click the {b('Caisse CafePOS')} icon.",
-        "Wait a few seconds: the till opens by itself in the web browser.",
+        "Wait a few seconds: the till opens by itself in its own window.",
     ]),
     s1_tips=[
         f"{b('Nothing happens?')} Wait 30 seconds, then double-click the icon again. "
@@ -427,7 +427,7 @@ EN = dict(
     ],
     s2_caption="The till with an order in progress: 2 Express, 1 Cappucine, 1 Eau 0.5, 2 Croissants.",
     s3=("The dashboard", "For the owner only. It is protected by a secret code (the PIN).", [
-        f"In the browser, go to the address {b('localhost:8000/admin')}.",
+        f"On the desktop, double-click the {b('Gerant CafePOS')} icon.",
         f"Type your {b('PIN')}, then tap {b('Sign in')}.",
     ]),
     s3_pin_tip=f"The starting PIN is {b('1234')} (unless the installer gave you a different one).",

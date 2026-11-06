@@ -39,7 +39,7 @@ if errorlevel 1 (
 )
 
 echo [1/4] Stopping any running CafePOS server...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-Process php -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $env:CAFEPOS_PHP } | Stop-Process -Force -ErrorAction SilentlyContinue"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "for ($i = 0; $i -lt 15; $i++) { $p = @(Get-Process php -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $env:CAFEPOS_PHP }); if (-not $p) { break }; $p | Stop-Process -Force -ErrorAction SilentlyContinue; Start-Sleep -Milliseconds 700 }"
 echo   OK
 
 echo [2/4] Adding the PHP intl extension...

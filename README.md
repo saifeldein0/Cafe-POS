@@ -65,8 +65,9 @@ to re-run: the existing `.env`, app key and database are kept. If you move the f
 
 - **Start**: double-click **Caisse CafePOS** on the desktop. It starts the server in the
   background (no window) if it is not already running, waits until it answers (up to ~30 s,
-  otherwise a message box explains what to do) and opens `http://localhost:8000/pos` in the
-  default browser. Double-clicking again just reopens the till; it never starts a second server.
+  otherwise a message box explains what to do) and opens the till in its own Edge or Chrome app
+  window (the default browser only if neither is installed). **Gerant CafePOS** does the same for
+  the dashboard. Double-clicking again opens another window; it never starts a second server.
 - **Stop**: the server stops when the owner logs off, restarts or shuts down the laptop.
   Next time, double-click the icon again. (Power users can run `deploy\start-cafepos.bat`
   instead: the server then runs in a visible console window, and closing that window stops it.)
@@ -109,7 +110,7 @@ phone can use the app at the same time.
 ## Pour le patron (en français)
 
 **Pour démarrer** : double-cliquez sur l'icône **Caisse CafePOS** du bureau. La caisse s'ouvre
-dans le navigateur après quelques secondes. Il n'y a pas de fenêtre noire. Refaites-le après
+dans sa propre fenêtre après quelques secondes. L'icône **Gerant CafePOS** ouvre le tableau de bord. Il n'y a pas de fenêtre noire. Refaites-le après
 chaque redémarrage de l'ordinateur (l'application ne démarre pas toute seule). Si vous
 double-cliquez alors qu'elle tourne déjà, la caisse s'ouvre simplement à nouveau.
 

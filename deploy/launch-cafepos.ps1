@@ -1,8 +1,11 @@
 ﻿# Desktop launcher for CafePOS POS (target of the "Caisse CafePOS" desktop shortcut).
 #
 #  - If the server already answers on the port: just open the browser.
-#  - Otherwise: start deploy\start-cafepos.bat in a HIDDEN window, wait until the server
-#    answers (max ~30 s), then open the default browser at http://localhost:<port>/pos.
+#  - Otherwise: start deploy\start-cafepos.bat in a HIDDEN window and wait until the server
+#    answers (max ~30 s).
+#  - Then open the page in its own app window (Edge or Chrome, no tabs or address bar),
+#    falling back to the default browser if neither is installed.
+#  - -Page pos (till, default) or -Page admin (owner dashboard).
 #  - Idempotent: a second double-click never starts a second server (port check + a
 #    named mutex so two quick double-clicks cannot race).
 #
@@ -14,6 +17,11 @@
 #   CAFEPOS_NO_BROWSER  1 = do not open the browser, print the URL instead (testing)
 #   CAFEPOS_TIMEOUT     seconds to wait for the server (default 30)
 
+param(
+    [ValidateSet('pos', 'admin')]
+    [string]$Page = 'pos'
+)
+
 $ErrorActionPreference = 'Stop'
 
 $DeployDir = $PSScriptRoot
@@ -22,7 +30,7 @@ $Port = if ($env:CAFEPOS_PORT) { [int]$env:CAFEPOS_PORT } else { 8000 }
 $Timeout = if ($env:CAFEPOS_TIMEOUT) { [int]$env:CAFEPOS_TIMEOUT } else { 30 }
 $NoBrowser = $env:CAFEPOS_NO_BROWSER -eq '1'
 $CheckUrl = "http://127.0.0.1:$Port/up"
-$PosUrl = "http://localhost:$Port/pos"
+$PageUrl = "http://localhost:$Port/$Page"
 $LogFile = Join-Path $AppDir 'storage\logs\launcher.log'
 
 function Write-Log([string]$Message) {
@@ -62,12 +70,30 @@ function Test-PortListening {
     }
 }
 
-function Open-Pos {
+function Open-Page {
     if ($NoBrowser) {
-        Write-Log "Browser skipped (CAFEPOS_NO_BROWSER=1): $PosUrl"
+        Write-Log "Window skipped (CAFEPOS_NO_BROWSER=1): $PageUrl"
+        return
+    }
+    $candidates = @(
+        (Join-Path ${env:ProgramFiles(x86)} 'Microsoft\Edge\Application\msedge.exe'),
+        (Join-Path $env:ProgramFiles 'Microsoft\Edge\Application\msedge.exe'),
+        (Join-Path $env:ProgramFiles 'Google\Chrome\Application\chrome.exe'),
+        (Join-Path ${env:ProgramFiles(x86)} 'Google\Chrome\Application\chrome.exe'),
+        (Join-Path $env:LOCALAPPDATA 'Google\Chrome\Application\chrome.exe')
+    )
+    $exe = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+    if ($exe) {
+        # A dedicated profile keeps this window apart from normal browsing, its cache and zoom.
+        $profileDir = Join-Path $env:LOCALAPPDATA 'CafePOS\window'
+        Write-Log "Opening $PageUrl in an app window ($exe)"
+        Start-Process -FilePath $exe -ArgumentList @(
+            "--app=$PageUrl", "--user-data-dir=`"$profileDir`"", '--no-first-run',
+            '--no-default-browser-check', '--start-maximized'
+        )
     } else {
-        Write-Log "Opening $PosUrl"
-        Start-Process $PosUrl
+        Write-Log "No Edge or Chrome found: opening $PageUrl in the default browser"
+        Start-Process $PageUrl
     }
 }
 
@@ -86,7 +112,7 @@ try {
 
     if (Test-ServerAnswers) {
         Write-Log 'Server already running'
-        Open-Pos
+        Open-Page
         exit 0
     }
 
@@ -105,7 +131,7 @@ try {
     while ((Get-Date) -lt $deadline) {
         if (Test-ServerAnswers) {
             Write-Log 'Server is up'
-            Open-Pos
+            Open-Page
             exit 0
         }
         if ($process -and $process.HasExited) { break }

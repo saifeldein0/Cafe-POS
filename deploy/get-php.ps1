@@ -96,6 +96,7 @@ extension=fileinfo
 extension=openssl
 extension=curl
 extension=zip
+extension=intl
 
 zend_extension=opcache
 opcache.enable=1

@@ -2,7 +2,7 @@
 #
 #  - If the server already answers on the port: just open the browser.
 #  - Otherwise: start deploy\start-cafepos.bat in a HIDDEN window and wait until the server
-#    answers (max ~30 s).
+#    answers (max ~120 s, with a small "starting" window), then load the page once.
 #  - Then open the page in its own app window (Edge or Chrome, no tabs or address bar),
 #    falling back to the default browser if neither is installed.
 #  - -Page pos (till, default) or -Page admin (owner dashboard).
@@ -15,7 +15,7 @@
 # Environment (optional):
 #   CAFEPOS_PORT        port to use (default 8000), same variable as start-cafepos.bat
 #   CAFEPOS_NO_BROWSER  1 = do not open the browser, print the URL instead (testing)
-#   CAFEPOS_TIMEOUT     seconds to wait for the server (default 30)
+#   CAFEPOS_TIMEOUT     seconds to wait for the server (default 120)
 
 param(
     [ValidateSet('pos', 'admin')]
@@ -27,7 +27,7 @@ $ErrorActionPreference = 'Stop'
 $DeployDir = $PSScriptRoot
 $AppDir = (Resolve-Path (Join-Path $DeployDir '..')).Path
 $Port = if ($env:CAFEPOS_PORT) { [int]$env:CAFEPOS_PORT } else { 8000 }
-$Timeout = if ($env:CAFEPOS_TIMEOUT) { [int]$env:CAFEPOS_TIMEOUT } else { 30 }
+$Timeout = if ($env:CAFEPOS_TIMEOUT) { [int]$env:CAFEPOS_TIMEOUT } else { 120 }
 $NoBrowser = $env:CAFEPOS_NO_BROWSER -eq '1'
 $CheckUrl = "http://127.0.0.1:$Port/up"
 $PageUrl = "http://localhost:$Port/$Page"
@@ -43,7 +43,7 @@ function Write-Log([string]$Message) {
 function Test-ServerAnswers {
     try {
         $request = [System.Net.HttpWebRequest]::Create($CheckUrl)
-        $request.Timeout = 1500
+        $request.Timeout = 5000
         $request.Proxy = $null
         $request.GetResponse().Close()
         return $true
@@ -97,6 +97,50 @@ function Open-Page {
     }
 }
 
+# Loads the page once before the window opens, so its slow first render happens here.
+function Invoke-WarmUp {
+    try {
+        $request = [System.Net.HttpWebRequest]::Create("http://127.0.0.1:$Port/$Page")
+        $request.Timeout = 60000
+        $request.Proxy = $null
+        $request.GetResponse().Close()
+    } catch [System.Net.WebException] {
+        if ($_.Exception.Response) { $_.Exception.Response.Close() }
+    } catch { }
+}
+
+# Small "starting" window, so nobody thinks nothing is happening on a slow first start.
+$script:Splash = $null
+function Show-Splash {
+    if ($NoBrowser) { return }
+    try {
+        Add-Type -AssemblyName System.Windows.Forms
+        $form = New-Object System.Windows.Forms.Form
+        $form.Text = 'Caisse CafePOS'
+        $form.StartPosition = 'CenterScreen'
+        $form.FormBorderStyle = 'FixedDialog'
+        $form.ControlBox = $false
+        $form.TopMost = $true
+        $form.ClientSize = New-Object System.Drawing.Size(420, 110)
+        $label = New-Object System.Windows.Forms.Label
+        $label.Text = "Démarrage de CafePOS, veuillez patienter...`nStarting CafePOS, please wait..."
+        $label.Font = New-Object System.Drawing.Font('Segoe UI', 12)
+        $label.TextAlign = 'MiddleCenter'
+        $label.Dock = 'Fill'
+        $form.Controls.Add($label)
+        $form.Show()
+        [System.Windows.Forms.Application]::DoEvents()
+        $script:Splash = $form
+    } catch { }
+}
+function Update-Splash { if ($script:Splash) { [System.Windows.Forms.Application]::DoEvents() } }
+function Close-Splash {
+    if ($script:Splash) {
+        try { $script:Splash.Close(); $script:Splash.Dispose() } catch { }
+        $script:Splash = $null
+    }
+}
+
 function Show-Error([string]$Message) {
     Write-Log "ERROR: $Message"
     if ($NoBrowser) { return }
@@ -112,9 +156,12 @@ try {
 
     if (Test-ServerAnswers) {
         Write-Log 'Server already running'
+        Invoke-WarmUp
         Open-Page
         exit 0
     }
+
+    Show-Splash
 
     $process = $null
     if (Test-PortListening) {
@@ -129,14 +176,18 @@ try {
 
     $deadline = (Get-Date).AddSeconds($Timeout)
     while ((Get-Date) -lt $deadline) {
+        Update-Splash
         if (Test-ServerAnswers) {
             Write-Log 'Server is up'
+            Invoke-WarmUp
+            Close-Splash
             Open-Page
             exit 0
         }
         if ($process -and $process.HasExited) { break }
         Start-Sleep -Milliseconds 500
     }
+    Close-Splash
 
     $detail = if ($process -and $process.HasExited) {
         "le serveur s'est arrêté tout de suite"
@@ -149,6 +200,7 @@ try {
         "(Détail : $detail.)")
     exit 1
 } finally {
+    Close-Splash
     try { $mutex.ReleaseMutex() } catch { }
     $mutex.Dispose()
 }

@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Exceptions\NoOpenShiftException;
 use App\Models\Ingredient;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Shift;
 use App\Models\StockMovement;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -18,9 +20,12 @@ class OrderService
      * rejected. Stock is deducted per known recipe line and may go negative: a sale is
      * never blocked by stock.
      *
+     * The order belongs to the open shift; with no shift open, nothing is recorded.
+     *
      * @param  array<int|string, int|string>  $cart
      *
      * @throws InvalidArgumentException
+     * @throws NoOpenShiftException
      */
     public function create(array $cart): Order
     {
@@ -49,7 +54,9 @@ class OrderService
         }
 
         return DB::transaction(function () use ($lines, $products) {
-            $order = Order::create(['total' => 0]);
+            $shift = Shift::current() ?? throw new NoOpenShiftException;
+
+            $order = Order::create(['total' => 0, 'shift_id' => $shift->id]);
 
             $total = 0.0;
             $deductions = [];

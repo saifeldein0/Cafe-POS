@@ -6,6 +6,7 @@ use Database\Seeders\DatabaseSeeder;
 beforeEach(function () {
     $this->seed(DatabaseSeeder::class);
     $this->withoutVite();
+    openShift();
 });
 
 it('defaults to French', function () {

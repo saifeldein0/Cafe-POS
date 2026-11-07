@@ -7,13 +7,18 @@ use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\RelationManagers\RecipeItemsRelationManager;
 use App\Filament\Resources\Purchases\Pages\CreatePurchase;
 use App\Filament\Resources\Purchases\Pages\ListPurchases;
+use App\Filament\Resources\Shifts\Pages\ListShifts;
+use App\Filament\Resources\Shifts\Pages\ViewShift;
 use App\Models\Ingredient;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\Purchase;
+use App\Models\Shift;
 use App\Models\StockMovement;
 use App\Models\User;
 use App\Services\OrderService;
 use App\Services\PurchaseService;
+use App\Services\ShiftService;
 use App\Services\StockService;
 use Database\Seeders\DatabaseSeeder;
 use Filament\Actions\Testing\TestAction;
@@ -96,6 +101,7 @@ it('lets the owner fill in an unknown recipe quantity', function () {
 
 it('cancels an order from the view page and hides the action afterwards', function () {
     $express = Product::where('name', 'Express')->firstOrFail();
+    openShift();
     $order = app(OrderService::class)->create([$express->id => 1]);
 
     Livewire::test(ViewOrder::class, ['record' => $order->getRouteKey()])
@@ -106,4 +112,35 @@ it('cancels an order from the view page and hides the action afterwards', functi
 
     Livewire::test(ListOrders::class)
         ->assertActionHidden(TestAction::make('cancel')->table($order->fresh()));
+});
+
+it('ends a shift left open from the shift history, and only the open one', function () {
+    $shifts = app(ShiftService::class);
+    $finished = $shifts->start();
+    $shifts->end($finished);
+    $open = $shifts->start();
+
+    Livewire::test(ListShifts::class)
+        ->assertCanSeeTableRecords([$open, $finished], inOrder: true)
+        ->assertActionHidden(TestAction::make('endShift')->table($finished))
+        ->assertActionVisible(TestAction::make('endShift')->table($open))
+        ->callAction(TestAction::make('endShift')->table($open));
+
+    expect(Shift::current())->toBeNull()
+        ->and($open->fresh()->isOpen())->toBeFalse();
+
+    Livewire::test(ViewShift::class, ['record' => $open->getRouteKey()])
+        ->assertActionHidden('endShift');
+});
+
+it('shows each order\'s shift, and older orders as before shifts', function () {
+    $legacy = Order::create(['total' => 1.7]);
+    $shift = openShift();
+    $order = app(OrderService::class)->create([Product::where('name', 'Express')->value('id') => 1]);
+
+    Livewire::test(ListOrders::class)
+        ->assertTableColumnStateSet('shift.started_at', $shift->started_at, $order)
+        ->assertSee('Avant les équipes');
+
+    expect($legacy->fresh()->shift_id)->toBeNull();
 });

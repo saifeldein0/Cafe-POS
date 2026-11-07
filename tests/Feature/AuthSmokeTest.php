@@ -5,10 +5,12 @@ use App\Filament\Pages\ChangePin;
 use App\Filament\Pages\MonthlyReport;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\RelationManagers\RecipeItemsRelationManager;
+use App\Filament\Widgets\LatestShifts;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\OrderService;
+use App\Services\ShiftService;
 use Database\Seeders\DatabaseSeeder;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Hash;
@@ -34,6 +36,41 @@ it('serves the POS to guests without a login', function () {
 
 it('redirects guests from the dashboard to the PIN login page', function () {
     $this->get('/admin')->assertRedirect('/admin/login');
+});
+
+it('redirects guests from the shift history to the PIN login page', function () {
+    $shift = openShift();
+
+    $this->get('/admin/shifts')->assertRedirect('/admin/login');
+    $this->get("/admin/shifts/{$shift->id}")->assertRedirect('/admin/login');
+});
+
+it('serves the shift history, a shift receipt and the dashboard widget to the owner', function () {
+    $owner = User::owner();
+    $orders = app(OrderService::class);
+    $shifts = app(ShiftService::class);
+
+    $first = openShift();
+    $orders->create([Product::where('name', 'Cappucine')->value('id') => 2]);
+    $shifts->end($first);
+    $open = $shifts->start();
+
+    $this->actingAs($owner)->get('/admin/shifts')
+        ->assertSuccessful()
+        ->assertSee('Historique des équipes')
+        ->assertSee('En cours');
+    $this->actingAs($owner)->get("/admin/shifts/{$first->id}")
+        ->assertSuccessful()
+        ->assertSee('Cappucine')
+        ->assertSee("Reçu de l'équipe");
+    $this->actingAs($owner)->get("/admin/shifts/{$open->id}")->assertSuccessful();
+    $this->actingAs($owner)->get('/admin')
+        ->assertSuccessful()
+        ->assertSeeLivewire(LatestShifts::class);
+    Livewire::test(LatestShifts::class)
+        ->assertSuccessful()
+        ->assertSee('Dernières équipes')
+        ->assertCanSeeTableRecords([$open, $first], inOrder: true);
 });
 
 it('shows a single PIN field on the login page', function () {
@@ -82,6 +119,7 @@ it('serves every admin page to the owner', function (string $url) {
 })->with([
     'dashboard' => '/admin',
     'orders' => '/admin/orders',
+    'shift history' => '/admin/shifts',
     'products' => '/admin/products',
     'product create' => '/admin/products/create',
     'ingredients' => '/admin/ingredients',
@@ -97,6 +135,7 @@ it('serves every admin page to the owner', function (string $url) {
 
 it('serves record pages to the owner', function () {
     $product = Product::where('name', 'Cappucine')->firstOrFail();
+    openShift();
     $order = app(OrderService::class)->create([$product->id => 2]);
     $owner = User::owner();
 

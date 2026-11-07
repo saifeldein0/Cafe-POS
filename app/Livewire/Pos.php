@@ -2,9 +2,14 @@
 
 namespace App\Livewire;
 
+use App\Exceptions\NoOpenShiftException;
+use App\Exceptions\ShiftAlreadyOpenException;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Shift;
 use App\Services\OrderService;
+use App\Services\ShiftService;
+use App\Services\ShiftSummary;
 use App\Support\Money;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -15,10 +20,18 @@ use Livewire\Component;
 
 /**
  * Cashier screen: tap products into a cart, confirm to record the order.
+ *
+ * Orders are only taken while a shift is open. With no shift open the till is locked: it shows the
+ * last finished shift's receipt and a "New shift" button. Ending or starting a shift asks
+ * "Are you sure?" first, through the $confirming state (an in-page dialog, no browser confirm()).
  */
 #[Layout('components.layouts.pos')]
 class Pos extends Component
 {
+    public const CONFIRM_END = 'end';
+
+    public const CONFIRM_START = 'start';
+
     /**
      * Current order as [product_id => quantity].
      *
@@ -31,9 +44,145 @@ class Pos extends Component
     /** Short-lived feedback after confirm: ['type' => 'success'|'error', 'text' => string, 'key' => string]. */
     public ?array $notice = null;
 
+    /** The "Are you sure?" dialog on screen: self::CONFIRM_END, self::CONFIRM_START or null. */
+    public ?string $confirming = null;
+
+    /** The previous receipt overlay is open. */
+    public bool $showReceipt = false;
+
+    /** On the locked screen, the receipt panel was closed (the "Previous receipt" button brings it back). */
+    public bool $receiptDismissed = false;
+
     public function mount(): void
     {
         $this->categoryId = $this->categories->first()?->id;
+    }
+
+    #[Computed]
+    public function shift(): ?Shift
+    {
+        return Shift::current();
+    }
+
+    #[Computed]
+    public function lastShift(): ?Shift
+    {
+        return Shift::lastFinished();
+    }
+
+    /**
+     * The last finished shift's receipt, recomputed from its orders.
+     */
+    #[Computed]
+    public function receipt(): ?ShiftSummary
+    {
+        return $this->lastShift === null ? null : app(ShiftService::class)->summary($this->lastShift);
+    }
+
+    public function askEndShift(): void
+    {
+        if ($this->shift === null) {
+            return;
+        }
+
+        if ($this->cart !== []) {
+            $this->notify('error', __('Confirm or clear the current order first.'));
+
+            return;
+        }
+
+        $this->showReceipt = false;
+        $this->confirming = self::CONFIRM_END;
+    }
+
+    public function askNewShift(): void
+    {
+        if ($this->shift !== null) {
+            return;
+        }
+
+        $this->showReceipt = false;
+        $this->confirming = self::CONFIRM_START;
+    }
+
+    public function cancelConfirm(): void
+    {
+        $this->confirming = null;
+    }
+
+    public function endShift(ShiftService $shifts): void
+    {
+        if ($this->confirming !== self::CONFIRM_END) {
+            return;
+        }
+
+        $this->confirming = null;
+
+        if ($this->cart !== []) {
+            $this->notify('error', __('Confirm or clear the current order first.'));
+
+            return;
+        }
+
+        if ($this->shift !== null) {
+            $shifts->end($this->shift);
+        }
+
+        $this->notice = null;
+        $this->showReceipt = false;
+        $this->receiptDismissed = false;
+        $this->forgetShifts();
+    }
+
+    public function startShift(ShiftService $shifts): void
+    {
+        if ($this->confirming !== self::CONFIRM_START) {
+            return;
+        }
+
+        $this->confirming = null;
+
+        try {
+            $shifts->start();
+        } catch (ShiftAlreadyOpenException) {
+            // Started meanwhile from another screen: the till simply opens on that shift.
+        }
+
+        $this->showReceipt = false;
+        $this->receiptDismissed = false;
+        $this->forgetShifts();
+        $this->notify('success', __('New shift started ✓'));
+    }
+
+    public function openReceipt(): void
+    {
+        if ($this->lastShift === null) {
+            return;
+        }
+
+        if ($this->shift === null && $this->receiptDismissed) {
+            $this->receiptDismissed = false;
+
+            return;
+        }
+
+        $this->confirming = null;
+        $this->showReceipt = true;
+    }
+
+    public function closeReceipt(): void
+    {
+        $this->showReceipt = false;
+    }
+
+    public function dismissReceipt(): void
+    {
+        $this->receiptDismissed = true;
+    }
+
+    private function forgetShifts(): void
+    {
+        unset($this->shift, $this->lastShift, $this->receipt);
     }
 
     /**
@@ -114,7 +263,7 @@ class Pos extends Component
      */
     public function addItem(int $productId, int|float|null $tap = null): void
     {
-        if (! Product::query()->active()->whereKey($productId)->exists()) {
+        if ($this->shift === null || ! Product::query()->active()->whereKey($productId)->exists()) {
             return;
         }
 
@@ -163,6 +312,12 @@ class Pos extends Component
 
         try {
             $order = $orders->create($this->cart);
+        } catch (NoOpenShiftException) {
+            // The shift was ended from another screen: keep the order, the till now asks for a new shift.
+            $this->forgetShifts();
+            $this->notify('error', __('No shift is open. Start a new shift.'));
+
+            return;
         } catch (InvalidArgumentException) {
             // A product was deactivated meanwhile: drop it and let the cashier check again.
             $active = Product::query()->active()->whereKey(array_keys($this->cart))->pluck('id')->all();

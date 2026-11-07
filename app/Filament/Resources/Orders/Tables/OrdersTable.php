@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Orders\Tables;
 
 use App\Filament\Resources\Orders\Actions\CancelOrderAction;
+use App\Filament\Resources\Shifts\Pages\ViewShift;
 use App\Models\Order;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
@@ -18,7 +19,7 @@ class OrdersTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->withSum('items as items_count', 'quantity'))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('shift')->withSum('items as items_count', 'quantity'))
             ->defaultSort('created_at', 'desc')
             ->columns([
                 TextColumn::make('id')
@@ -28,6 +29,11 @@ class OrdersTable
                     ->label(__('Date'))
                     ->dateTime('d/m/Y H:i')
                     ->sortable(),
+                TextColumn::make('shift.started_at')
+                    ->label(__('Shift'))
+                    ->dateTime('d/m H:i')
+                    ->placeholder(__('Before shifts'))
+                    ->url(fn (Order $record): ?string => $record->shift_id === null ? null : ViewShift::getUrl(['record' => $record->shift_id])),
                 TextColumn::make('total')
                     ->label(__('Total'))
                     ->numeric(decimalPlaces: 3, decimalSeparator: '.', thousandsSeparator: ' ')

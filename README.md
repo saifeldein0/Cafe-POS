@@ -15,7 +15,7 @@ report for the owner, all running on one Windows laptop with no internet connect
 ![The till: categories, product tiles and the current order](docs/screenshots/till.webp)
 
 > All names, prices, costs, recipes, expenses and sales in these screenshots are **generated demo
-> data**, not a real cafe's figures. The demo owner PIN is `1234`.
+> data**, not a real cafe's figures (with a few extra demo recipes beyond the seed). The demo owner PIN is `1234`.
 
 ## Why
 
@@ -77,11 +77,11 @@ set the constraints:
 | ![End-of-shift confirmation](docs/screenshots/till-end-shift.webp) | ![Shift receipt on the till](docs/screenshots/till-receipt.webp) |
 | **Ending a shift** asks for confirmation; the till then locks. | **Shift receipt:** items x qty, orders, cancelled orders apart, total. |
 | ![Owner dashboard](docs/screenshots/dashboard.webp) | ![Monthly report](docs/screenshots/monthly-report.webp) |
-| **Dashboard:** today, month, estimated profit (a week into the month, fixed expenses still outweigh sales), stock alerts, latest shifts. | **Monthly report:** net profit, then cost and margin per product (`~` = estimate from an incomplete recipe). |
+| **Dashboard:** today, month, estimated net profit, stock alerts, latest shifts. | **Monthly report:** net profit, then cost and margin per product (`~` = estimate from an incomplete recipe). |
 | ![Products with cost and margin](docs/screenshots/products.webp) | ![Product recipe editor](docs/screenshots/product-recipe.webp) |
-| **Products** with estimated cost, recipe status and margin. | **Recipe** of a product, costed per ingredient. |
+| **Products** with estimated cost, recipe status and margin. | **Recipe** of a product (here a mojito), costed per ingredient. |
 | ![Shift history receipt](docs/screenshots/shift-view.webp) | ![Ingredients and stock](docs/screenshots/ingredients.webp) |
-| **Shift history:** any past shift's receipt, including cancellations. | **Stock:** levels (negative in red), unit cost, packaging, stock adjustment. |
+| **Shift history:** any past shift's receipt, including cancellations. | **Stock:** levels, unit cost, packaging, stock adjustment (negative stock shows in red). |
 | ![Till in English](docs/screenshots/till-en.webp) | <img src="docs/screenshots/phone-dashboard-en.webp" alt="Dashboard on a phone, in English" width="260"> |
 | **English UI** in one tap (menu items keep their French names). | **On the owner's phone** over the cafe Wi-Fi. |
 

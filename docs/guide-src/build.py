@@ -335,7 +335,7 @@ FR = dict(
         f"{b('Date d’achat')} : la date du jour est déjà remplie.",
         f"Touchez {b('Créer')}. Le stock est mis à jour tout seul.",
     ]),
-    s4_tip=f"Exemple : 1 kg de café à 25 DT → Ingrédient {b('Café')}, 1 conditionnement, coût total {b('25')}.",
+    s4_tip=f"Exemple : 1 kg de café à 30 DT → Ingrédient {b('Café')}, 1 conditionnement, coût total {b('30')}.",
     s5=("Les recettes", "Chaque produit a une recette : ce qu'il faut pour le préparer. La caisse s'en sert pour calculer le coût.", [
         f"Dans le menu à gauche, touchez {b('Produits')}.",
         f"Touchez {b('Modifier')} sur la ligne du produit (par exemple {b('Cappucine')}).",
@@ -357,7 +357,7 @@ FR = dict(
         f"En haut, choisissez le {b('Mois')}.",
         f"Lisez le {b('Résumé')} : ventes − achats du mois − charges fixes = {b('Bénéfice net')}.",
     ]),
-    s6_caption1="Le résumé du mois : ici, un bénéfice net de 876 DT.",
+    s6_caption1="Le résumé du mois : ici, un bénéfice net de 1 836 DT.",
     s6_table=f"Plus bas, {b('Ventes par produit')} montre ce qui se vend le mieux, et la marge de chaque produit.",
     s6_tip=(
         f"Le petit signe {b('~')} veut dire « estimé » : la recette de ce produit est incomplète. "
@@ -456,7 +456,7 @@ EN = dict(
         f"{b('Purchase date')}: today's date is already filled in.",
         f"Tap {b('Create')}. The stock is updated by itself.",
     ]),
-    s4_tip=f"Example: 1 kg of coffee for 25 DT → Ingredient {b('Café')}, 1 package, total cost {b('25')}.",
+    s4_tip=f"Example: 1 kg of coffee for 30 DT → Ingredient {b('Café')}, 1 package, total cost {b('30')}.",
     s5=("Recipes", "Each product has a recipe: what goes into it. The till uses it to work out the cost.", [
         f"In the menu on the left, tap {b('Products')}.",
         f"Tap {b('Edit')} on the product's line (for example {b('Cappucine')}).",
@@ -478,7 +478,7 @@ EN = dict(
         f"At the top, choose the {b('Month')}.",
         f"Read the {b('Summary')}: sales − purchases this month − fixed expenses = {b('Net profit')}.",
     ]),
-    s6_caption1="The month summary: here, a net profit of 876 DT.",
+    s6_caption1="The month summary: here, a net profit of 1,836 DT.",
     s6_table=f"Further down, {b('Sales by product')} shows what sells best, and the margin on each product.",
     s6_tip=(
         f"The small {b('~')} sign means \"estimated\": that product's recipe is incomplete. "

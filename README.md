@@ -1,5 +1,9 @@
 # CafePOS POS
 
+> **Demo data:** the seeded menu, prices, ingredient costs, recipes and fixed expenses (and the
+> screenshots in the guide) are made-up demo values, not a real cafe's figures. The default
+> owner PIN is `1234`.
+
 Point of sale and owner dashboard for the CafePOS cafe.
 
 - **Cashier screen** at `/pos`: tap products, take the order, done. No login.
